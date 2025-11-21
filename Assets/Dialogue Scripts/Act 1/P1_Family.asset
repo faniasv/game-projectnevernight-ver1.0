@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 786c7bc14905c2f45b560b57ac49e2c3, type: 3}
+  m_Name: P1_Family
+  m_EditorClassIdentifier: 
+  lines:
+  - characterName: Minion
+    lineText: Ugh.... sudah berapa bulan kamu menunda kunjungan keluarga?
+    commands: []
+  - characterName: Ava
+    lineText: A-apa ada yang salah?
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: be52b80718b715c4ebcfc1c89206a601, type: 3}
+  - characterName: Minion
+    lineText: Sudah berapa bulan kamu menunda pulang ke rumah orang tuamu?
+    commands: []
+  - characterName: Ava
+    lineText: A-aku tidak tahu....
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: be52b80718b715c4ebcfc1c89206a601, type: 3}
+  - characterName: Ava
+    lineText: Sepertinya semuanya penting.... tapi jujur, aku sangat merindukan ibuku.
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: be52b80718b715c4ebcfc1c89206a601, type: 3}
+  - characterName: Ava
+    lineText: ..... tapi jujur, aku sangat merindukan ibuku.
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: be52b80718b715c4ebcfc1c89206a601, type: 3}
