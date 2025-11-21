@@ -2,7 +2,7 @@
 Welcome to Nevernight Project Ver 1.0! This is 2d game made in Unity.
 
 ## 🎮 About Game
-In Nevernight, you play as Ava, a woman suffer from burnout and insomnia. You journey through a surreal city inside her mind called Atheris, divided into "districts" that represent different parts of her brain. The game uses this setting to tell a story about mental exhaustion and the process of find peace by letting go, rather than try to control every thought.
+In Nevernight, you play as Ava, a woman suffer from insomnia and overthinking. You journey through a surreal city inside her mind called Atheris, divided into "districts" that represent different parts of her brain. The game uses this setting to tell a story about mental exhaustion and the process of find peace by letting go, rather than try to control every thought.
 
 ## 🕹️ How to Play
 - Use Left Click to click and drop
