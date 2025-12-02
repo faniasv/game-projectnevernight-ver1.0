@@ -86,7 +86,7 @@ public class Puzzle1_Manager : MonoBehaviour
         StartCoroutine(ShowErrorPanelForSeconds(2f));
 
         // 3. Cek Gagal Total (Pindah Act)
-        if (attemptCounter >= 5)
+        if (attemptCounter >= 3)
         {
             dialogueManager.StartDialogue(dialogueAttempt3);
             UnityEngine.Debug.Log("Sudah 5x gagal. Memicu transisi...");
