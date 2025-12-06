@@ -1,28 +1,35 @@
-using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class DropZone : MonoBehaviour, IDropHandler
 {
-    // Variable baru untuk prioritas slot
-    public int priorityLevel;
-    // ------------------------------------------------
-    // VARIABEL BARU UNTUK REFERENSI KE MANAGER
-    [SerializeField] private Puzzle1_Manager puzzleManager;
+    [Header("Settings")]
+    public int priorityLevel; // 1, 2, 3
+    public bool isScoringZone = true; // CENTANG ini untuk Slot Papan, JANGAN CENTANG untuk Meja Bawah
 
     public void OnDrop(PointerEventData eventData)
     {
-        UnityEngine.Debug.Log("Item di-drop di atas slot dengan prioritas: " + priorityLevel); // Di-update untuk testing
+        Debug.Log("OnDrop Terpanggil di: " + gameObject.name);
 
-        GameObject droppedObject = eventData.pointerDrag;
-        DraggableItem draggableItem = droppedObject.GetComponent<DraggableItem>();
+        GameObject droppedObj = eventData.pointerDrag;
+        if (droppedObj == null) return;
+
+        DraggableItem draggableItem = droppedObj.GetComponent<DraggableItem>();
 
         if (draggableItem != null)
         {
-            // Pindahkan posisi item yang di-drop agar sama persis dengan posisi slot ini
-            droppedObject.transform.position = this.transform.position;
-            // Cetak Task ID dan Value untuk memastikan semuanya masih bekerja
-            puzzleManager.OnTaskDroppedOnSlot(priorityLevel, draggableItem.TaskID);
+            // 1. Set rumah baru item ini ke object ini
+            draggableItem.parentAfterDrag = transform;
+
+            // 2. Cek apakah ini zona yang menghitung skor/load?
+            if (isScoringZone)
+            {
+                Puzzle1_Manager manager = FindObjectOfType<Puzzle1_Manager>();
+                if (manager != null)
+                {
+                    manager.OnTaskDroppedOnSlot(priorityLevel, draggableItem.TaskID);
+                }
+            }
         }
     }
 }

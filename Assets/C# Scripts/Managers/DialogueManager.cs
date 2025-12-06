@@ -3,147 +3,134 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using System; // Penting untuk Action
+using System;
 
 public class DialogueManager : MonoBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private GameObject dialoguePanel; // Referensi ke panel dialog utama
-    [SerializeField] private TextMeshProUGUI dialogueTextUI; // Referensi ke UI Teks Konten
-    [SerializeField] private TextMeshProUGUI nameTextUI; // Referensi ke UI Teks Nama (Opsional)
-    [SerializeField] private Image characterImagePanel; // Asset Ekspresi (Opsional)
+    [SerializeField] private GameObject dialoguePanel;
+    [SerializeField] private TextMeshProUGUI dialogueTextUI;
+    [SerializeField] private TextMeshProUGUI nameTextUI;
+    [SerializeField] private Image characterImagePanel;
+
+    // --- [PERBAIKAN ERROR CS0103] ---
+    [Header("Animation")]
+    [SerializeField] private Animator animator; // Variabel ini sebelumnya hilang!
+    // --------------------------------
 
     [Header("Character Styling")]
-    [SerializeField] private Color minionColor = Color.yellow; // Warna teks untuk Minion
-    [SerializeField] private Color avaColor = Color.cyan; // Warna teks untuk Ava
+    [SerializeField] private Color minionColor = Color.yellow;
+    [SerializeField] private Color avaColor = Color.cyan;
 
     [Header("Audio Settings")]
-    [SerializeField] private AudioClip[] typingSounds; // Array variasi suara ketikan
-    [Range(1, 5)]
-    [SerializeField] private int frequencyLevel = 2; // Bunyi setiap 2 huruf
-    [SerializeField] private AudioSource dialogueAudioSource; // Sumber audio
-    [Range(0f, 1f)]
-    [SerializeField] private float typingVolume = 0.5f;
+    [SerializeField] private AudioClip[] typingSounds;
+    [Range(1, 5)][SerializeField] private int frequencyLevel = 2;
+    [SerializeField] private AudioSource dialogueAudioSource;
+    [Range(0f, 1f)][SerializeField] private float typingVolume = 0.5f;
 
     [Header("Settings")]
-    [SerializeField] public float charactersPerSecond = 25f; // Kecepatan ngetik
+    [SerializeField] public float charactersPerSecond = 25f;
 
     // Internal State
     private Queue<DialogueLine> dialogueQueue = new Queue<DialogueLine>();
     private bool isDialogueActive = false;
     private bool isTyping = false;
     private Coroutine typingCoroutine;
+
+    // Variabel ini untuk menyimpan teks penuh yang akan diketik
     private string currentFullLine;
 
-    // Callback: Siapa yang harus ditelepon balik saat dialog selesai?
-    private Action onDialogueFinished;
+    private bool shouldKeepPanelOpen = false;
+
+    public static event Action OnDialogueEnded;
 
     void Awake()
     {
-        // Setup awal Audio Source jika lupa dipasang
         if (dialogueAudioSource == null)
         {
             dialogueAudioSource = GetComponent<AudioSource>();
-            if (dialogueAudioSource == null)
-            {
-                dialogueAudioSource = gameObject.AddComponent<AudioSource>();
-            }
+            if (dialogueAudioSource == null) dialogueAudioSource = gameObject.AddComponent<AudioSource>();
         }
-
-        // Matikan panel gambar di awal
         if (characterImagePanel != null) characterImagePanel.gameObject.SetActive(false);
     }
 
     void Update()
     {
-        // Cek input hanya jika panel aktif
-        if (dialoguePanel.activeInHierarchy && (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)))
+        // Input hanya jalan jika dialog aktif
+        if (isDialogueActive && (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0)))
         {
             if (isTyping)
             {
-                // Kalau sedang ngetik -> Langsung selesaikan (Skip)
-                CompleteLine();
+                CompleteLine(); // Skip ketikan
             }
             else
             {
-                // Kalau sudah selesai ngetik -> Lanjut baris berikutnya
-                DisplayNextLine();
+                DisplayNextLine(); // Lanjut baris
             }
         }
     }
 
-    // ==========================================================
-    // FUNGSI UTAMA (Dipanggil oleh Controller/Manager lain)
-    // ==========================================================
-
-    public void StartDialogue(DialogueData data, Action onFinished = null)
+    public void StartDialogue(DialogueData dialogueData)
     {
-        // 1. Simpan callback (siapa yang manggil)
-        onDialogueFinished = onFinished;
+        if (isDialogueActive) return;
 
-        // 2. Reset State
         isDialogueActive = true;
-        dialoguePanel.SetActive(true);
+        shouldKeepPanelOpen = dialogueData.keepPanelOpenAtEnd;
+
         dialogueQueue.Clear();
 
-        // 3. Masukkan semua baris ke antrian
-        foreach (var line in data.lines)
+        foreach (DialogueLine line in dialogueData.lines)
         {
             dialogueQueue.Enqueue(line);
         }
 
-        // 4. Mulai baris pertama
+        // Buka Panel Animasi
+        if (animator != null) animator.SetBool("IsOpen", true);
+        else if (dialoguePanel != null) dialoguePanel.SetActive(true); // Fallback jika animator null
+
         DisplayNextLine();
     }
 
     public void DisplayNextLine()
     {
-        // Cek apakah antrian habis?
         if (dialogueQueue.Count == 0)
         {
             EndDialogue();
             return;
         }
 
-        // Ambil data baris saat ini
         DialogueLine currentLine = dialogueQueue.Dequeue();
-        currentFullLine = currentLine.lineText;
+        StopAllCoroutines();
 
-        // Set Nama di UI (jika ada)
+        // --- [PERBAIKAN BUG TEKS HILANG] ---
+        // Kita harus isi variabel string ini, kalau tidak Coroutine ngetik angin (null)
+        currentFullLine = currentLine.lineText;
+        // -----------------------------------
+
         if (nameTextUI != null) nameTextUI.text = currentLine.characterName;
 
-        // Jalankan Commands (Ganti BG, SFX, dll) sebelum teks muncul
-        if (currentLine.commands != null)
-        {
-            ProcessCommands(currentLine.commands);
-        }
+        if (currentLine.commands != null) ProcessCommands(currentLine.commands);
 
-        // Mulai Animasi Mengetik
         if (typingCoroutine != null) StopCoroutine(typingCoroutine);
         typingCoroutine = StartCoroutine(TypeLine(currentLine));
     }
-
-    // ==========================================================
-    // LOGIKA PENGETIKAN & VISUAL
-    // ==========================================================
 
     private IEnumerator TypeLine(DialogueLine line)
     {
         isTyping = true;
         dialogueTextUI.text = "";
 
-        // --- Styling Karakter (Kiri/Kanan & Warna) ---
+        // Styling Warna
         string charName = line.characterName.ToUpper().Trim();
-
         if (charName == "MINION")
         {
             dialogueTextUI.color = minionColor;
-            dialogueTextUI.alignment = TextAlignmentOptions.MidlineRight; // Minion di Kanan
+            dialogueTextUI.alignment = TextAlignmentOptions.MidlineRight;
         }
         else if (charName == "AVA")
         {
             dialogueTextUI.color = avaColor;
-            dialogueTextUI.alignment = TextAlignmentOptions.MidlineLeft; // Ava di Kiri
+            dialogueTextUI.alignment = TextAlignmentOptions.MidlineLeft;
         }
         else
         {
@@ -151,13 +138,13 @@ public class DialogueManager : MonoBehaviour
             dialogueTextUI.alignment = TextAlignmentOptions.MidlineLeft;
         }
 
-        // --- Loop Huruf per Huruf ---
+        // Efek Mengetik
         char[] charArray = currentFullLine.ToCharArray();
         for (int i = 0; i < charArray.Length; i++)
         {
             dialogueTextUI.text += charArray[i];
 
-            // Efek Audio
+            // Suara ketikan
             if (charArray[i] != ' ' && i % frequencyLevel == 0)
             {
                 PlayTypingSound();
@@ -172,8 +159,7 @@ public class DialogueManager : MonoBehaviour
     private void CompleteLine()
     {
         if (typingCoroutine != null) StopCoroutine(typingCoroutine);
-
-        dialogueTextUI.text = currentFullLine; // Tampilkan teks penuh
+        dialogueTextUI.text = currentFullLine;
         isTyping = false;
     }
 
@@ -181,41 +167,23 @@ public class DialogueManager : MonoBehaviour
     {
         if (dialogueAudioSource != null && typingSounds != null && typingSounds.Length > 0)
         {
-            // Random variasi suara
             int index = UnityEngine.Random.Range(0, typingSounds.Length);
-
-            // Random pitch biar organik (ala Animal Crossing/Celeste)
-            dialogueAudioSource.pitch = UnityEngine.Random.Range(0.9f, 1.1f);
             dialogueAudioSource.PlayOneShot(typingSounds[index], typingVolume);
         }
     }
-
-    // ==========================================================
-    // LOGIKA COMMAND & ENDING
-    // ==========================================================
 
     private void ProcessCommands(GameCommand[] commands)
     {
         foreach (GameCommand cmd in commands)
         {
-            switch (cmd.type)
+            if (cmd.type == CommandType.PlaySound && cmd.audioAsset != null)
             {
-                case CommandType.PlaySound:
-                    if (cmd.audioAsset != null) dialogueAudioSource.PlayOneShot(cmd.audioAsset);
-                    break;
-
-                case CommandType.ChangeBackground:
-                    if (cmd.spriteAsset != null && characterImagePanel != null)
-                    {
-                        characterImagePanel.sprite = cmd.spriteAsset;
-                        characterImagePanel.gameObject.SetActive(true);
-                    }
-                    break;
-
-                case CommandType.StartPuzzle:
-                    Debug.Log("Command Start Puzzle diterima: " + cmd.value);
-                    // Logika trigger puzzle bisa ditambahkan di sini jika perlu direct access
-                    break;
+                dialogueAudioSource.PlayOneShot(cmd.audioAsset);
+            }
+            else if (cmd.type == CommandType.ChangeBackground && cmd.spriteAsset != null)
+            {
+                characterImagePanel.sprite = cmd.spriteAsset;
+                characterImagePanel.gameObject.SetActive(true);
             }
         }
     }
@@ -223,12 +191,14 @@ public class DialogueManager : MonoBehaviour
     private void EndDialogue()
     {
         isDialogueActive = false;
-        dialoguePanel.SetActive(false); // Tutup panel
-        dialogueTextUI.text = "";
 
-        Debug.Log("Dialog Selesai. Memanggil Callback...");
+        // Kalau TIDAK dicentang keep open, baru tutup panel
+        if (!shouldKeepPanelOpen)
+        {
+            if (animator != null) animator.SetBool("IsOpen", false);
+            else if (dialoguePanel != null) dialoguePanel.SetActive(false);
+        }
 
-        // PENTING: Kabari script pemanggil (Act1_Controller) bahwa dialog sudah beres
-        onDialogueFinished?.Invoke();
+        OnDialogueEnded?.Invoke();
     }
 }

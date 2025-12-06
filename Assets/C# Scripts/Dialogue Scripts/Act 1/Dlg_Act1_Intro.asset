@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 786c7bc14905c2f45b560b57ac49e2c3, type: 3}
   m_Name: Dlg_Act1_Intro
   m_EditorClassIdentifier: 
+  keepPanelOpenAtEnd: 0
   lines:
   - characterName: MINION
     lineText: Astaga, gimana nih? Banyak banget yang perlu dikerjain sekarang.

@@ -4,8 +4,11 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Dialogue", menuName = "Nevernight/Dialogue")]
 public class DialogueData : ScriptableObject
 {
-    // Sebuah array yang berisi semua baris dialog dalam satu percakapan
-    public DialogueLine[] lines;
+    [Header("Settings")]
+    public bool keepPanelOpenAtEnd = false; // CENTANG INI UNTUK INTRO ACT 1
+
+    [Header("Content")]
+    public DialogueLine[] lines;// Sebuah array yang berisi semua baris dialog dalam satu percakapan
 }
 
 // Struct ini mendefinisikan struktur dari SATU baris dialog

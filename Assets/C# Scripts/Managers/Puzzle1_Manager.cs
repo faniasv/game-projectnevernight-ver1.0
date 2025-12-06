@@ -1,158 +1,180 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; // Untuk mengakses komponen Slider
-using TMPro; // Untuk mengakses komponen TextMeshPro
-using System.Linq; // Untuk logika pencarian
+using UnityEngine.UI;
+using TMPro;
+using System.Linq;
 
-// [Perubahan] Langkah 1: Buat "Database" untuk setiap tugas
 [System.Serializable]
 public class TaskDefinition
 {
-    [Tooltip("ID unik, harus sama dengan TaskID di DraggableItem")]
     public string taskID;
-
-    [Tooltip("Nilai 'Load' untuk gameplay. (Set 50f agar 3x50 = 150)")]
     public float taskValue;
-
-    [Tooltip("Tandai 'true' jika ini penting secara naratif")]
     public bool isNarrativelyImportant;
-
-    [Tooltip("Dialog yang akan diputar JIKA tugas penting ini DILUPAKAN")]
     public DialogueData forgottenDialogue;
 }
+
 public class Puzzle1_Manager : MonoBehaviour
 {
-    [Header("UI Components")]
+    [Header("UI References")]
+    [SerializeField] private CanvasGroup puzzleCanvasGroup;
     [SerializeField] private Slider taskLoadSlider;
     [SerializeField] private GameObject errorPanel;
 
-    [Header("Game Logic Variables")]
-    private float currentLoad = 0f; // [cite: 21]
-    [SerializeField] private float maxLoad = 150f; // 
-    private int attemptCounter = 0; // [cite: 25]
+    [Header("Game Logic")]
+    [SerializeField] private float maxLoad = 150f;
+    private float currentLoad = 0f;
+    private int attemptCounter = 0;
+    private Dictionary<int, string> occupiedSlots = new Dictionary<int, string>();
+    private bool isGameEnding = false;
 
-    // [Perubahan] Langkah 2: "Database" baru
-    [Header("Task Database")]
+    [Header("Data")]
     [SerializeField] private List<TaskDefinition> allTasksInLevel;
 
-    [Header("Dialogue System")]
+    [Header("Dialogue System Connection")]
     [SerializeField] private DialogueManager dialogueManager;
-
-    // Dialog 'fallback' jika tidak ada tugas penting yang dilupakan
     [SerializeField] private DialogueData dialogueAttempt1;
     [SerializeField] private DialogueData dialogueAttempt2;
     [SerializeField] private DialogueData dialogueAttempt3;
 
-    // Dictionary tetap sama, tapi sekarang hanya menyimpan ID
-    private Dictionary<int, string> occupiedSlots = new Dictionary<int, string>();
-
-    // Fungsi yang bisa dipanggil oleh script lain
-    // [Perubahan] Langkah 3: Sederhanakan fungsi ini
-    // Dia hanya perlu tahu 'slotPriority' dan 'taskID'
-    public void OnTaskDroppedOnSlot(int slotPriority, string taskID)
+    // --- EVENT LISTENER ---
+    private void OnEnable()
     {
-        // 1. Cari data lengkap untuk taskID ini dari database
-        TaskDefinition taskData = GetTaskData(taskID);
-        if (taskData == null)
-        {
-            Debug.LogError($"TaskID '{taskID}' tidak ditemukan di 'allTasksInLevel'!");
-            return;
-        }
-
-        // 2. Catat di slot
-        occupiedSlots[slotPriority] = taskID;
-        UnityEngine.Debug.Log("GameManager mencatat: Slot " + slotPriority + " diisi oleh Task '" + taskID + "'");
-
-        // 3. Update load berdasarkan data dari database
-        taskLoadSlider.maxValue = maxLoad;
-        currentLoad += taskData.taskValue;
-        taskLoadSlider.value = currentLoad;
+        DialogueManager.OnDialogueEnded += HandleDialogueEnded;
     }
 
-    // [Perubahan] Langkah 4: Perbarui Logika Tombol Save
+    private void OnDisable()
+    {
+        DialogueManager.OnDialogueEnded -= HandleDialogueEnded;
+    }
+
+    private void HandleDialogueEnded()
+    {
+        // Kalau game belum over, nyalakan puzzle lagi setelah dialog selesai
+        if (!isGameEnding)
+        {
+            SetPuzzleState(true, true);
+        }
+    }
+    // -----------------------
+
+    void Start()
+    {
+        if (taskLoadSlider)
+        {
+            taskLoadSlider.maxValue = maxLoad;
+            taskLoadSlider.value = 0;
+        }
+
+        if (puzzleCanvasGroup == null)
+            Debug.LogError("Puzzle1_Manager: CanvasGroup KOSONG! Drag Puzzle1_Panel ke sini.");
+    }
+
+    public void OnTaskDroppedOnSlot(int slotPriority, string taskID)
+    {
+        if (occupiedSlots.ContainsKey(slotPriority))
+            occupiedSlots[slotPriority] = taskID;
+        else
+            occupiedSlots.Add(slotPriority, taskID);
+
+        RecalculateTotalLoad();
+    }
+
+    public void OnTaskRemovedFromSlot(int slotPriority)
+    {
+        if (occupiedSlots.ContainsKey(slotPriority))
+        {
+            occupiedSlots.Remove(slotPriority);
+        }
+        RecalculateTotalLoad();
+    }
+
+    private void RecalculateTotalLoad()
+    {
+        currentLoad = 0f;
+        foreach (var slot in occupiedSlots)
+        {
+            TaskDefinition data = GetTaskData(slot.Value);
+            if (data != null) currentLoad += data.taskValue;
+        }
+
+        if (taskLoadSlider != null) taskLoadSlider.value = currentLoad;
+    }
+
     public void OnSaveButtonPressed()
     {
-        // 1. Cek Menang (Tidak berubah)
+        if (isGameEnding) return;
+
+        // 1. CEK MENANG
         if (occupiedSlots.ContainsKey(1) && occupiedSlots[1] == "Rest")
         {
-            UnityEngine.Debug.Log("PUZZLE 1 SELESAI!");
+            Debug.Log("WIN: Act 1 Selesai!");
             return;
         }
 
-        // 2. Logika Gagal
+        // 2. JIKA GAGAL
         attemptCounter++;
-        UnityEngine.Debug.Log("Tombol Save diklik! Percobaan ke-" + attemptCounter);
-        StartCoroutine(ShowErrorPanelForSeconds(2f));
+        StartCoroutine(ShowErrorPanelRoutine());
 
-        // 3. Cek Gagal Total (Pindah Act)
+        // Matikan puzzle sementara dialog jalan
+        SetPuzzleState(true, false);
+
+        // 3. CEK 3x GAGAL
         if (attemptCounter >= 3)
         {
+            isGameEnding = true;
             dialogueManager.StartDialogue(dialogueAttempt3);
-            UnityEngine.Debug.Log("Sudah 5x gagal. Memicu transisi...");
             Invoke("TransitionToAct2", 4f);
             return;
         }
 
-        // 4. LOGIKA NARATIF BARU (Percobaan 1 atau 2)
+        // 4. CEK LOGIKA NARATIF (Lupa tugas penting)
+        HashSet<string> currentTableTasks = new HashSet<string>(occupiedSlots.Values);
 
-        // Buat daftar tugas yang DIPILIH pemain
-        HashSet<string> placedTaskIDs = new HashSet<string>(occupiedSlots.Values);
-
-        // Ulangi 'database' untuk mencari tugas PENTING yang DILUPAKAN
         foreach (TaskDefinition task in allTasksInLevel)
         {
-            // Cek: Apakah tugas ini TIDAK ada di daftar 'placed' DAN 'isImportant' == true?
-            if (!placedTaskIDs.Contains(task.taskID) && task.isNarrativelyImportant)
+            if (task.isNarrativelyImportant && !currentTableTasks.Contains(task.taskID))
             {
-                // DITEMUKAN!
-                UnityEngine.Debug.Log($"Pemain melupakan tugas penting: {task.taskID}. Memutar dialog spesifik.");
                 dialogueManager.StartDialogue(task.forgottenDialogue);
-
-                // PENTING: Hentikan fungsi di sini agar kita hanya memutar SATU dialog spesifik
                 return;
             }
         }
 
-        // 5. FALLBACK DIALOGUE
-        // Jika loop di atas selesai tanpa menemukan dialog (artinya pemain tidak melupakan 
-        // tugas penting), putar dialog 'attempt' generik.
-        UnityEngine.Debug.Log("Tidak ada tugas penting yang dilupakan. Memutar dialog fallback.");
-        if (attemptCounter == 1)
-        {
-            dialogueManager.StartDialogue(dialogueAttempt1);
-        }
-        else if (attemptCounter == 2)
-        {
-            dialogueManager.StartDialogue(dialogueAttempt2);
-        }
+        // 5. DIALOG GENERIK
+        if (attemptCounter == 1) dialogueManager.StartDialogue(dialogueAttempt1);
+        else if (attemptCounter == 2) dialogueManager.StartDialogue(dialogueAttempt2);
     }
 
-    // [Perubahan] Langkah 5: Fungsi helper baru untuk mencari data di database
-    private TaskDefinition GetTaskData(string taskID)
+    private TaskDefinition GetTaskData(string id)
     {
-        foreach (TaskDefinition task in allTasksInLevel)
+        foreach (var task in allTasksInLevel)
         {
-            if (task.taskID == taskID)
-            {
-                return task;
-            }
+            if (task.taskID == id) return task;
         }
-        return null; // Tidak ditemukan
+        return null;
     }
 
-    // Fungsi transisi ke Act 2
     private void TransitionToAct2()
     {
-        // Logika pindah scene
-        Debug.Log("Pindah ke Act 2...");
+        Debug.Log(">> PINDAH SCENE KE ACT 2 <<");
+        // SceneManager.LoadScene("SC_Act2");
     }
 
-    // Coroutine (Tidak berubah)
-    private IEnumerator ShowErrorPanelForSeconds(float seconds)
+    private IEnumerator ShowErrorPanelRoutine()
     {
-        errorPanel.SetActive(true);
-        yield return new WaitForSeconds(seconds);
-        errorPanel.SetActive(false);
+        if (errorPanel) errorPanel.SetActive(true);
+        yield return new WaitForSeconds(2f);
+        if (errorPanel) errorPanel.SetActive(false);
+    }
+
+    // FUNGSI PENGATUR VISUAL & INTERAKSI
+    public void SetPuzzleState(bool isVisible, bool isInteractable)
+    {
+        if (puzzleCanvasGroup != null)
+        {
+            puzzleCanvasGroup.alpha = isVisible ? 1f : 0f;
+            puzzleCanvasGroup.blocksRaycasts = isVisible && isInteractable;
+            puzzleCanvasGroup.interactable = isVisible && isInteractable;
+        }
     }
 }
