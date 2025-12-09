@@ -16,16 +16,32 @@ MonoBehaviour:
   lines:
   - characterName: MINION
     lineText: Astaga, gimana nih? Banyak banget yang perlu dikerjain sekarang.
-    commands: []
+    commands:
+    - type: 0
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
   - characterName: MINION
     lineText: Mulai dari mana ya?
-    commands: []
+    commands:
+    - type: 0
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
   - characterName: MINION
     lineText: Bayar sewa apartemen?
-    commands: []
+    commands:
+    - type: 0
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
   - characterName: MINION
     lineText: Masih seminggu lagi sih
-    commands: []
+    commands:
+    - type: 0
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
   - characterName: MINION
     lineText: tapi... aku takut ntar uangnya terpakai
     commands: []

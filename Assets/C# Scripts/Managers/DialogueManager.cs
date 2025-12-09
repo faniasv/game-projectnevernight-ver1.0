@@ -192,13 +192,23 @@ public class DialogueManager : MonoBehaviour
     {
         isDialogueActive = false;
 
-        // Kalau TIDAK dicentang keep open, baru tutup panel
-        if (!shouldKeepPanelOpen)
+        // --- [PERBAIKAN UTAMA DI SINI] ---
+        // Kosongkan teks saat dialog selesai, supaya layar bersih 
+        // meskipun panelnya masih terbuka menunggu input selanjutnya.
+        if (dialogueTextUI != null)
         {
-            if (animator != null) animator.SetBool("IsOpen", false);
-            else if (dialoguePanel != null) dialoguePanel.SetActive(false);
+            dialogueTextUI.text = "";
         }
+        // ---------------------------------
+
+        //// Kalau TIDAK dicentang keep open, baru tutup panel visualnya
+        //if (!shouldKeepPanelOpen)
+        //{
+        //    if (animator != null) animator.SetBool("IsOpen", false);
+        //    else if (dialoguePanel != null) dialoguePanel.SetActive(false);
+        //}
 
         OnDialogueEnded?.Invoke();
+        Debug.Log("Dialog Selesai. Event Dikirim!");
     }
 }

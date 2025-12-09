@@ -2,179 +2,197 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System.Linq;
 
 [System.Serializable]
-public class TaskDefinition
+public class TaskData
 {
     public string taskID;
-    public float taskValue;
-    public bool isNarrativelyImportant;
+    [Range(0, 100)] public float taskLoad;
     public DialogueData forgottenDialogue;
 }
 
 public class Puzzle1_Manager : MonoBehaviour
 {
     [Header("UI References")]
-    [SerializeField] private CanvasGroup puzzleCanvasGroup;
-    [SerializeField] private Slider taskLoadSlider;
-    [SerializeField] private GameObject errorPanel;
+    public GameObject puzzlePanel;
+    public CanvasGroup puzzleCanvasGroup;
+    public GameObject errorPanel;
 
-    [Header("Game Logic")]
-    [SerializeField] private float maxLoad = 150f;
-    private float currentLoad = 0f;
+    public Slider mentalLoadSlider;
+    public float maxLoad = 100f;
+
+    [Header("System References")]
+    public DialogueManager dialogueManager;
+
+    [Header("Puzzle Data")]
+    public List<TaskData> allTasksInLevel;
+    public DialogueData overloadDialogue; // Dialog saat Give Up (Percobaan ke-3)
+
     private int attemptCounter = 0;
     private Dictionary<int, string> occupiedSlots = new Dictionary<int, string>();
-    private bool isGameEnding = false;
 
-    [Header("Data")]
-    [SerializeField] private List<TaskDefinition> allTasksInLevel;
-
-    [Header("Dialogue System Connection")]
-    [SerializeField] private DialogueManager dialogueManager;
-    [SerializeField] private DialogueData dialogueAttempt1;
-    [SerializeField] private DialogueData dialogueAttempt2;
-    [SerializeField] private DialogueData dialogueAttempt3;
-
-    // --- EVENT LISTENER ---
-    private void OnEnable()
-    {
-        DialogueManager.OnDialogueEnded += HandleDialogueEnded;
-    }
-
-    private void OnDisable()
-    {
-        DialogueManager.OnDialogueEnded -= HandleDialogueEnded;
-    }
-
-    private void HandleDialogueEnded()
-    {
-        // Kalau game belum over, nyalakan puzzle lagi setelah dialog selesai
-        if (!isGameEnding)
-        {
-            SetPuzzleState(true, true);
-        }
-    }
-    // -----------------------
+    // Subscribe Event agar puzzle aktif lagi setelah dialog selesai
+    private void OnEnable() => DialogueManager.OnDialogueEnded += ReboundPuzzle;
+    private void OnDisable() => DialogueManager.OnDialogueEnded -= ReboundPuzzle;
 
     void Start()
     {
-        if (taskLoadSlider)
+        if (puzzlePanel != null) puzzlePanel.SetActive(true);
+
+        if (mentalLoadSlider != null)
         {
-            taskLoadSlider.maxValue = maxLoad;
-            taskLoadSlider.value = 0;
+            mentalLoadSlider.maxValue = maxLoad;
+            mentalLoadSlider.value = 0;
         }
 
-        if (puzzleCanvasGroup == null)
-            Debug.LogError("Puzzle1_Manager: CanvasGroup KOSONG! Drag Puzzle1_Panel ke sini.");
+        // Sembunyikan visual (Alpha 0) menunggu Act1_Manager memunculkan
+        SetPuzzleState(false, false);
     }
 
-    public void OnTaskDroppedOnSlot(int slotPriority, string taskID)
-    {
-        if (occupiedSlots.ContainsKey(slotPriority))
-            occupiedSlots[slotPriority] = taskID;
-        else
-            occupiedSlots.Add(slotPriority, taskID);
+    // --- LOGIKA SLOT & SLIDER (TIDAK DIUBAH) ---
 
-        RecalculateTotalLoad();
+    public void OnTaskDroppedOnSlot(int slotIndex, string taskID)
+    {
+        if (occupiedSlots.ContainsKey(slotIndex)) occupiedSlots[slotIndex] = taskID;
+        else occupiedSlots.Add(slotIndex, taskID);
+
+        UpdateSliderVisual();
     }
 
-    public void OnTaskRemovedFromSlot(int slotPriority)
+    public void OnTaskRemovedFromSlot(int slotIndex)
     {
-        if (occupiedSlots.ContainsKey(slotPriority))
+        if (occupiedSlots.ContainsKey(slotIndex)) occupiedSlots.Remove(slotIndex);
+
+        UpdateSliderVisual();
+    }
+
+    private void UpdateSliderVisual()
+    {
+        if (mentalLoadSlider == null) return;
+
+        float currentTotalLoad = 0f;
+        foreach (var item in occupiedSlots)
         {
-            occupiedSlots.Remove(slotPriority);
+            string id = item.Value;
+            TaskData data = allTasksInLevel.Find(x => x.taskID == id);
+            if (data != null) currentTotalLoad += data.taskLoad;
         }
-        RecalculateTotalLoad();
+        mentalLoadSlider.value = currentTotalLoad;
     }
 
-    private void RecalculateTotalLoad()
-    {
-        currentLoad = 0f;
-        foreach (var slot in occupiedSlots)
-        {
-            TaskDefinition data = GetTaskData(slot.Value);
-            if (data != null) currentLoad += data.taskValue;
-        }
-
-        if (taskLoadSlider != null) taskLoadSlider.value = currentLoad;
-    }
+    // --- LOGIKA UTAMA YANG DIUBAH (BUTTON & DIALOGUE) ---
 
     public void OnSaveButtonPressed()
     {
-        if (isGameEnding) return;
+        Debug.Log("TEST: Tombol Kerjakan Berhasil Ditekan!");
 
-        // 1. CEK MENANG
-        if (occupiedSlots.ContainsKey(1) && occupiedSlots[1] == "Rest")
-        {
-            Debug.Log("WIN: Act 1 Selesai!");
-            return;
-        }
+        // Mencegah spam klik tombol saat animasi error sedang jalan
+       if (puzzleCanvasGroup != null && !puzzleCanvasGroup.interactable) return;
 
-        // 2. JIKA GAGAL
+        Debug.Log("Tombol Kerjakan Ditekan. Memulai Sequence Error...");
+
+        // Jalankan urutan: Error Panel -> Tunggu -> Logic Dialog
+        StartCoroutine(HandleSubmissionSequence());
+    }
+
+    private IEnumerator HandleSubmissionSequence()
+    {
+        // 1. Matikan Interaksi agar player tidak bisa drag item saat error
+        SetPuzzleInteractive(false);
+
+        // 2. Munculkan Error Panel (Sesuai request agar tersambung)
+        if (errorPanel != null) errorPanel.SetActive(true);
+
+        // 3. Tunggu durasi glitch/error (1.5 detik)
+        yield return new WaitForSeconds(1.5f);
+
+        // 4. Matikan Error Panel
+        if (errorPanel != null) errorPanel.SetActive(false);
+
+        // 5. Update Counter Percobaan
         attemptCounter++;
-        StartCoroutine(ShowErrorPanelRoutine());
+        Debug.Log("Percobaan Submit ke-" + attemptCounter);
 
-        // Matikan puzzle sementara dialog jalan
-        SetPuzzleState(true, false);
+        // 6. TENTUKAN DIALOG MANA YANG MUNCUL
+        DialogueData dialogueToPlay = null;
 
-        // 3. CEK 3x GAGAL
+        // KONDISI A: Sudah 3x Gagal (Overload / Give Up)
         if (attemptCounter >= 3)
         {
-            isGameEnding = true;
-            dialogueManager.StartDialogue(dialogueAttempt3);
-            Invoke("TransitionToAct2", 4f);
-            return;
+            dialogueToPlay = overloadDialogue;
+            LevelLoader.instance.LoadNextScene("SC_Act2");
         }
-
-        // 4. CEK LOGIKA NARATIF (Lupa tugas penting)
-        HashSet<string> currentTableTasks = new HashSet<string>(occupiedSlots.Values);
-
-        foreach (TaskDefinition task in allTasksInLevel)
+        // KONDISI B: Belum 3x (Cari Random Forgotten Task)
+        else
         {
-            if (task.isNarrativelyImportant && !currentTableTasks.Contains(task.taskID))
+            // Buat list tugas yang TIDAK ada di meja (occupiedSlots)
+            List<TaskData> forgottenList = new List<TaskData>();
+
+            // Ambil semua ID yang sedang terpasang di meja
+            List<string> placedIDs = occupiedSlots.Values.ToList();
+
+            foreach (var task in allTasksInLevel)
             {
-                dialogueManager.StartDialogue(task.forgottenDialogue);
-                return;
+                // Jika ID tugas ini TIDAK ada di meja -> Masukkan ke list forgotten
+                if (!placedIDs.Contains(task.taskID))
+                {
+                    forgottenList.Add(task);
+                }
+            }
+
+            // Jika ada tugas yang dilupakan, pilih satu secara random
+            if (forgottenList.Count > 0)
+            {
+                int randomIndex = Random.Range(0, forgottenList.Count);
+                dialogueToPlay = forgottenList[randomIndex].forgottenDialogue;
             }
         }
 
-        // 5. DIALOG GENERIK
-        if (attemptCounter == 1) dialogueManager.StartDialogue(dialogueAttempt1);
-        else if (attemptCounter == 2) dialogueManager.StartDialogue(dialogueAttempt2);
-    }
-
-    private TaskDefinition GetTaskData(string id)
-    {
-        foreach (var task in allTasksInLevel)
+        // 7. Eksekusi Dialog
+        if (dialogueToPlay != null)
         {
-            if (task.taskID == id) return task;
+            Debug.Log("Memainkan Dialog: " + dialogueToPlay.name);
+            dialogueManager.StartDialogue(dialogueToPlay);
         }
-        return null;
+        else
+        {
+            // Fallback jika lupa assign dialog di inspector, kembalikan kontrol ke player
+            Debug.LogWarning("Tidak ada dialog yang ditemukan (Null). Mengembalikan kontrol.");
+            SetPuzzleInteractive(true);
+        }
     }
 
-    private void TransitionToAct2()
+    // --- FUNGSI BANTUAN (TIDAK DIUBAH BANYAK) ---
+
+    private void ReboundPuzzle()
     {
-        Debug.Log(">> PINDAH SCENE KE ACT 2 <<");
-        // SceneManager.LoadScene("SC_Act2");
+        // Jika belum menyerah (3x), aktifkan lagi puzzle setelah dialog selesai
+        if (attemptCounter < 3)
+        {
+            SetPuzzleInteractive(true);
+        }
+        // Jika sudah 3x, biasanya akan pindah scene atau logic lain (diatur Dialogue Data)
     }
 
-    private IEnumerator ShowErrorPanelRoutine()
+    private void SetPuzzleInteractive(bool status)
     {
-        if (errorPanel) errorPanel.SetActive(true);
-        yield return new WaitForSeconds(2f);
-        if (errorPanel) errorPanel.SetActive(false);
+        if (puzzleCanvasGroup != null)
+        {
+            puzzleCanvasGroup.interactable = status;
+            puzzleCanvasGroup.blocksRaycasts = status;
+        }
     }
 
-    // FUNGSI PENGATUR VISUAL & INTERAKSI
     public void SetPuzzleState(bool isVisible, bool isInteractable)
     {
         if (puzzleCanvasGroup != null)
         {
             puzzleCanvasGroup.alpha = isVisible ? 1f : 0f;
-            puzzleCanvasGroup.blocksRaycasts = isVisible && isInteractable;
-            puzzleCanvasGroup.interactable = isVisible && isInteractable;
+            puzzleCanvasGroup.interactable = isInteractable;
+            puzzleCanvasGroup.blocksRaycasts = isInteractable;
         }
+        if (puzzlePanel != null && !puzzlePanel.activeSelf)
+            puzzlePanel.SetActive(true);
     }
 }
