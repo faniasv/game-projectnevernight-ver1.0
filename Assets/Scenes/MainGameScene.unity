@@ -169,7 +169,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &35400732
 Transform:
   m_ObjectHideFlags: 0
@@ -1056,10 +1056,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de3ae7c5e1664b243b9a5647d4f48bcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minionPanel: {fileID: 1163658421}
-  avaPanel: {fileID: 325484560}
-  dialoguePanel: {fileID: 631759855}
-  puzzle1Container: {fileID: 1073745492}
+  dialogueManager: {fileID: 0}
+  puzzle1Manager: {fileID: 0}
   introDialogue: {fileID: 11400000, guid: cf84fe25845bc0f4493db17a43683847, type: 2}
 --- !u!1 &748759268
 GameObject:
@@ -1387,11 +1385,6 @@ MonoBehaviour:
     openingDialogue: {fileID: 0}
     afterPuzzleDialogue: {fileID: 0}
   dialogueManager: {fileID: 1995913753}
---- !u!1 &1073745492 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7823754666963199925, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
-  m_PrefabInstance: {fileID: 2440829341715157489}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1073745493 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4264186924706981415, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
@@ -1546,7 +1539,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1162216512
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3332,17 +3325,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1818035394}
   m_CullTransparentMesh: 1
---- !u!114 &1884817886 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2789586293527234943, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
-  m_PrefabInstance: {fileID: 2440829341715157489}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1995913751
 GameObject:
   m_ObjectHideFlags: 0
@@ -3392,6 +3374,7 @@ MonoBehaviour:
   dialogueTextUI: {fileID: 748759269}
   nameTextUI: {fileID: 0}
   characterImagePanel: {fileID: 325484562}
+  animator: {fileID: 0}
   minionColor: {r: 1, g: 0.7495184, b: 0.3915094, a: 1}
   avaColor: {r: 0.31626022, g: 0.45248783, b: 0.9716981, a: 1}
   typingSounds:
@@ -3525,38 +3508,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82802eb226c317e4dbd39af599c568b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  taskLoadSlider: {fileID: 1884817886}
+  puzzlePanel: {fileID: 0}
+  puzzleCanvasGroup: {fileID: 0}
   errorPanel: {fileID: 74149903}
+  mentalLoadSlider: {fileID: 0}
   maxLoad: 150
+  dialogueManager: {fileID: 1995913753}
   allTasksInLevel:
   - taskID: Family
-    taskValue: 50
-    isNarrativelyImportant: 1
+    taskLoad: 0
     forgottenDialogue: {fileID: 11400000, guid: bccc186e0dab68d498d13a56c389efdd, type: 2}
   - taskID: Finance
-    taskValue: 50
-    isNarrativelyImportant: 1
+    taskLoad: 0
     forgottenDialogue: {fileID: 11400000, guid: c0e6e0fc1c7931c4fbbad7c370b2098c, type: 2}
   - taskID: Friend
-    taskValue: 50
-    isNarrativelyImportant: 1
+    taskLoad: 0
     forgottenDialogue: {fileID: 11400000, guid: 2b8b931ba6910f941bdb2323b832a904, type: 2}
   - taskID: Friend2
-    taskValue: 50
-    isNarrativelyImportant: 1
+    taskLoad: 0
     forgottenDialogue: {fileID: 11400000, guid: 41b9ec7d58a833a46abf24cbf5c2b996, type: 2}
   - taskID: Work
-    taskValue: 50
-    isNarrativelyImportant: 1
+    taskLoad: 0
     forgottenDialogue: {fileID: 11400000, guid: c38eed727f7b73445ac238f85e5a4d2b, type: 2}
   - taskID: Work2
-    taskValue: 50
-    isNarrativelyImportant: 1
+    taskLoad: 0
     forgottenDialogue: {fileID: 11400000, guid: 14b296433747b104c9a3de882b352649, type: 2}
-  dialogueManager: {fileID: 1995913753}
-  dialogueAttempt1: {fileID: 11400000, guid: 6c0118e2e89c4e145b9b8020aed2895e, type: 2}
-  dialogueAttempt2: {fileID: 11400000, guid: d2087caacd224da4da27b71c890dce89, type: 2}
-  dialogueAttempt3: {fileID: 11400000, guid: 16efeb4858a37d24991867023b60b30d, type: 2}
+  overloadDialogue: {fileID: 0}
 --- !u!4 &2017746013
 Transform:
   m_ObjectHideFlags: 0
@@ -3881,7 +3858,31 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 545702973666358996, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1905410887663163546, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1905410887663163546, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1905410887663163546, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 1905410887663163546, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 1905410887663163546, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 560.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1905410887663163546, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -127.82315
       objectReference: {fileID: 0}
     - target: {fileID: 4264186924706981415, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
       propertyPath: m_Pivot.x
@@ -3970,6 +3971,10 @@ PrefabInstance:
     - target: {fileID: 7823754666963199925, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
       propertyPath: m_Name
       value: Puzzle1_Container
+      objectReference: {fileID: 0}
+    - target: {fileID: 7823754666963199925, guid: 31ed39f68c5de4842a9a30a48bb08c5e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
