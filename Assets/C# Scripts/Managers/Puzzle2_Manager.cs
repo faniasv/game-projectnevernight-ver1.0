@@ -52,16 +52,11 @@ public class Puzzle2_Manager : MonoBehaviour
             return;
         }
         vaseSelectionPanel.SetActive(false);
-        StartCoroutine(PlayCutsceneAndStartPuzzle(allPuzzles[puzzleIndex]));
+        StartCoroutine(StartPuzzle(allPuzzles[puzzleIndex]));
     }
 
-    private IEnumerator PlayCutsceneAndStartPuzzle(PuzzleData puzzleData)
+    private IEnumerator StartPuzzle(PuzzleData puzzleData)
     {
-        Debug.Log("Memainkan Cutscene Minion...");
-        cutscenePanel.SetActive(true);
-        yield return new WaitForSeconds(3f); // Durasi cutscene
-        cutscenePanel.SetActive(false);
-
         Debug.Log($"Memunculkan puzzle set: {puzzleData.puzzleName}");
         reassemblePanel.SetActive(true);
 
@@ -75,9 +70,10 @@ public class Puzzle2_Manager : MonoBehaviour
         VasePuzzleSet vaseScript = currentPuzzleSetInstance.GetComponent<VasePuzzleSet>();
         if (vaseScript != null)
         {
-            // Kirim data puzzlenya.
             vaseScript.SetupSet(this, puzzleData);
         }
+    
+        yield return null;
     }
 
 
@@ -90,20 +86,22 @@ public class Puzzle2_Manager : MonoBehaviour
     private IEnumerator ShowPhotocardSequence(PuzzleData puzzleData)
     {
         // Sembunyikan panel puzzle
-        reassemblePanel.SetActive(false);
-        if (currentPuzzleSetInstance != null)
+        if (currentPuzzleSetInstance != null)   
         {
             Destroy(currentPuzzleSetInstance);
+            currentPuzzleSetInstance = null;
         }
+        reassemblePanel.SetActive(false);
 
-        // 1. Ganti gambar (Sprite) di dalam komponen Image
+        // Tunggu 2 frame biar destroy selesai
+        yield return null;
+        yield return null;
+
+        // BARU show photocard
         photocardImageDisplay.sprite = puzzleData.photocardSprite;
-
-        // 2. Tampilkan panel photocard-nya
         photocardPanel.SetActive(true);
-        // ------------------------------------------
 
-        yield return new WaitForSeconds(3f); // Tunggu pemain mengklik (atau jeda 3 detik)
+        yield return new WaitForSeconds(15f); // Tunggu pemain mengklik (atau jeda 3 detik)
 
         // Sembunyikan photocard
         photocardPanel.SetActive(false);
@@ -112,7 +110,7 @@ public class Puzzle2_Manager : MonoBehaviour
         Debug.Log("Memainkan dialog penutup puzzle...");
         dialogueManager.StartDialogue(puzzleData.afterPuzzleDialogue);
 
-        yield return new WaitForSeconds(5f); // Asumsi durasi dialog
+        yield return new WaitForSeconds(10f); // Asumsi durasi dialog
 
         // Kembali ke panel pemilihan vas
         ShowVaseSelection();
