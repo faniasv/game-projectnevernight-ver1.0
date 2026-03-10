@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 786c7bc14905c2f45b560b57ac49e2c3, type: 3}
+  m_Name: Dig_Act2_Intro
+  m_EditorClassIdentifier: 
+  keepPanelOpenAtEnd: 0
+  lines:
+  - characterName: AVA
+    lineText: Di mana papan tugasnya? Aku harus menyelesaikan yang belum selesai.
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 5009ad2fa8a51074991cdd49ad87d1ad, type: 3}
+  - characterName: MINION
+    lineText: Hei, kamu baik-baik saja?
+    commands: []
+  - characterName: AVA
+    lineText: Ya... kayaknya sih
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
+  - characterName: MINION
+    lineText: Kok cuma 'kayaknya'?
+    commands: []
+  - characterName: AVA
+    lineText: Entahlah, aku merasa capek banget akhir-akhir ini sampai sering salah.
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
+  - characterName: MINION
+    lineText: Itu wajar kok. Gimana rasanya waktu melakukan kesalahan?
+    commands: []
+  - characterName: AVA
+    lineText: Malu, frustrasi, dan sedih juga.
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 9bf943f71623c264885804e87a446f0f, type: 3}
+  - characterName: MINION
+    lineText: Sepertinya berat banget ya?
+    commands: []
+  - characterName: AVA
+    lineText: Iya, dan aku harus sembunyikan supaya bisa tetap menjalani hariku
+    commands:
+    - type: 0
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
+  - characterName: MINION
+    lineText: Pernah coba... biarin itu semua berlalu ga?
+    commands: []
+  - characterName: AVA
+    lineText: Belum pernah sih. Kayaknya itu hal yang menyeramkan
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 5009ad2fa8a51074991cdd49ad87d1ad, type: 3}
+  - characterName: MINION
+    lineText: Coba deh kapan-kapan
+    commands: []
+  - characterName: AVA
+    lineText: Terima kasih sarannya. Bisa antar aku balik ke papan tugas?
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 5009ad2fa8a51074991cdd49ad87d1ad, type: 3}
+  - characterName: MINION
+    lineText: Kayaknya nggak bisa. Jujur, kamu udah ada di sini waktu aku buka toko.
+    commands: []
+  - characterName: AVA
+    lineText: Oh...
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 9bf943f71623c264885804e87a446f0f, type: 3}
+  - characterName: MINION
+    lineText: Maaf ya bangunin kamu. Aku cuma mau bersihin vas-vas ini, eh malah
+      jatuh.
+    commands: []
+  - characterName: AVA
+    lineText: Yah... baiklah karena aku udah terlanjur di sini, ada yang bisa aku
+      bantu?
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
+  - characterName: MINION
+    lineText: Sebenarnya ada. Bisa bantu pilih vas mana yang harus aku bersihin duluan?
+    commands: []
+  - characterName: MINION
+    lineText: Bisa, sepertinya akan mudah
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 5009ad2fa8a51074991cdd49ad87d1ad, type: 3}
