@@ -40,7 +40,7 @@ public class FragmentPuzzle : MonoBehaviour, IPointerDownHandler, IBeginDragHand
         Debug.Log($"Mulai drag {fragmentID}.");
         canvasGroup.alpha = 0.8f; // Buat sedikit transparan
 
-        transform.SetParent(canvas.transform, true); // Pindahkan ke Canvas utama agar bisa digeser bebas
+        // transform.SetParent(canvas.transform, true); // Pindahkan ke Canvas utama agar bisa digeser bebas
     }
 
     public void OnDrag(PointerEventData eventData)
