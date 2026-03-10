@@ -54,7 +54,18 @@ public class FragmentTarget : MonoBehaviour, IDropHandler // Hanya perlu mendete
                     fragment.LockInPlace();
 
                     // Beri tahu VasePuzzleSet (manager set) bahwa 1 target selesai
-                    vaseSetManager.NotifyTargetCompleted();
+                    if (vaseSetManager != null)
+                    {
+                        vaseSetManager.NotifyTargetCompleted();
+                    } else 
+                    {
+                        Debug.LogWarning("Setup not called yet - finding VasePuzzleSet manually");
+                        VasePuzzleSet puzzleSet = GetComponentInParent<VasePuzzleSet>();
+                        if (puzzleSet != null)
+                        {
+                            puzzleSet.NotifyTargetCompleted();
+                        }
+                    }
                 }
                 else
                 {
