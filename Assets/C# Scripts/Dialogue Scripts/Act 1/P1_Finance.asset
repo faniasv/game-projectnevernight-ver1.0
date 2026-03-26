@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 786c7bc14905c2f45b560b57ac49e2c3, type: 3}
   m_Name: P1_Finance
   m_EditorClassIdentifier: 
+  keepPanelOpenAtEnd: 0
   lines:
   - characterName: Minion
     lineText: Hmm, gimana ya?
@@ -22,7 +23,7 @@ MonoBehaviour:
     - type: 1
       value: 
       audioAsset: {fileID: 0}
-      spriteAsset: {fileID: 21300000, guid: be52b80718b715c4ebcfc1c89206a601, type: 3}
+      spriteAsset: {fileID: 21300000, guid: 5009ad2fa8a51074991cdd49ad87d1ad, type: 3}
   - characterName: Minion
     lineText: Bayar dulu sewa apartemennya...
     commands: []
@@ -32,7 +33,7 @@ MonoBehaviour:
     - type: 1
       value: 
       audioAsset: {fileID: 0}
-      spriteAsset: {fileID: 21300000, guid: be52b80718b715c4ebcfc1c89206a601, type: 3}
+      spriteAsset: {fileID: 21300000, guid: 93d40e3a07f297444827a05118da7db5, type: 3}
   - characterName: Minion
     lineText: Aku hanya khawatir uang itu akan terpakai untuk hal lain
     commands: []

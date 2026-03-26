@@ -4,6 +4,25 @@ using UnityEngine;
 
 public class VasePuzzleSet : MonoBehaviour
 {
+    void Start()
+    {
+        // For testing in editor when puzzle is already in scene
+        if (puzzleManager == null)
+        {
+            Debug.LogWarning("Testing mode - auto-setup");
+            // puzzleManager = FindObjectOfType<Puzzle2_Manager>();
+            // allTargets = new List<FragmentTarget>(GetComponentsInChildren<FragmentTarget>());
+            // totalTargets = allTargets.Count;
+            // completedTargets = 0;
+        
+            // Debug.Log($"VasePuzzleSet: Test setup. Found {totalTargets} targets.");
+        
+            // foreach (FragmentTarget target in allTargets)
+            // {
+            //      target.SetupTarget(this);
+            // }
+        }
+    }
     // Referensi yang diisi oleh manager
     private Puzzle2_Manager puzzleManager;
     private PuzzleData myPuzzleData; // Kita simpan semua data puzzle

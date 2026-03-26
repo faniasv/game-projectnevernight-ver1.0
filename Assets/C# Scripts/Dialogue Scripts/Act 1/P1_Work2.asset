@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 786c7bc14905c2f45b560b57ac49e2c3, type: 3}
   m_Name: P1_Work2
   m_EditorClassIdentifier: 
+  keepPanelOpenAtEnd: 0
   lines:
   - characterName: Minion
     lineText: Kamu tidak menyusun untuk menyelesaikan presentasi...
@@ -22,7 +23,7 @@ MonoBehaviour:
     - type: 0
       value: 
       audioAsset: {fileID: 0}
-      spriteAsset: {fileID: 21300000, guid: be52b80718b715c4ebcfc1c89206a601, type: 3}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
   - characterName: Minion
     lineText: ' Jadi, kapan kamu akan mengerjakannya?'
     commands: []
@@ -32,4 +33,4 @@ MonoBehaviour:
     - type: 1
       value: 
       audioAsset: {fileID: 0}
-      spriteAsset: {fileID: 21300000, guid: be52b80718b715c4ebcfc1c89206a601, type: 3}
+      spriteAsset: {fileID: 21300000, guid: 93d40e3a07f297444827a05118da7db5, type: 3}
