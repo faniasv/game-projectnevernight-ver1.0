@@ -25,9 +25,15 @@ public class Puzzle1_Manager : MonoBehaviour
     [Header("System References")]
     public DialogueManager dialogueManager;
 
+    [Header("OVT Reminders")]
+    public List<DialogueData> ovtReminderDialogues; 
+
+    [Tooltip("Isi dengan kalimat pendek: 'Lihat fotonya', 'Fokus ke meja', dll")]
+    public List<DialogueData> guidingBarks; 
+
     [Header("Puzzle Data")]
     public List<TaskData> allTasksInLevel;
-    public DialogueData overloadDialogue;
+    public OvtNotesManager ovtManager;
 
     private int attemptCounter = 0;
     private Dictionary<int, string> occupiedSlots = new Dictionary<int, string>();
@@ -88,15 +94,16 @@ public class Puzzle1_Manager : MonoBehaviour
         if (errorPanel != null) errorPanel.SetActive(false);
 
         attemptCounter++;
+        Debug.Log($"<color=orange>[Puzzle1]</color> Attempt Gagal ke: <b>{attemptCounter}</b>");
+
         DialogueData dialogueToPlay = null;
 
         if (attemptCounter >= 3)
         {
-            dialogueToPlay = overloadDialogue;
-            
-            // --- MENGGUNAKAN SISTEM BARU ---
-            // Sesuai Build Settings, SC_Act2 ada di index 3
-            GameEvents.OnActChanged?.Invoke(3); 
+            if (ovtManager != null) 
+            {
+                ovtManager.TriggerOVT(attemptCounter);
+            }
         }
         else
         {
@@ -130,7 +137,7 @@ public class Puzzle1_Manager : MonoBehaviour
         if (attemptCounter < 3) SetPuzzleInteractive(true);
     }
 
-    private void SetPuzzleInteractive(bool status)
+    public void SetPuzzleInteractive(bool status)
     {
         if (puzzleCanvasGroup != null)
         {
@@ -150,4 +157,23 @@ public class Puzzle1_Manager : MonoBehaviour
         if (puzzlePanel != null && !puzzlePanel.activeSelf)
             puzzlePanel.SetActive(true);
     }
+
+    public void PlayOvtDialogue()
+    {
+        int index = attemptCounter - 3; // Attempt 3 = index 0
+
+        // 1. JIKA MASIH DALAM URUTAN 4 DIALOG UTAMA (Attempt 3, 4, 5, 6)
+        if (index >= 0 && index < ovtReminderDialogues.Count)
+        {
+            dialogueManager.StartDialogue(ovtReminderDialogues[index]);
+        }
+        // 2. JIKA SUDAH LEWAT (Attempt 7 Ke Atas)
+        else if (guidingBarks.Count > 0)
+        {
+            // Ambil secara acak dari list pengingat agar tidak bosan
+            int randomBarkIndex = Random.Range(0, guidingBarks.Count);
+            dialogueManager.StartDialogue(guidingBarks[randomBarkIndex]);
+        }
+    }
+
 }

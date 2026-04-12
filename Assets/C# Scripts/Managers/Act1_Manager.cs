@@ -37,7 +37,7 @@ public class Act1_Manager : MonoBehaviour
         // Perintah ke Puzzle Manager: "Nyalakan GameObject-nya, tapi bikin Transparan (Alpha 0) & Jangan bisa diklik"
         if (puzzle1Manager != null)
         {
-            puzzle1Manager.SetPuzzleState(false, false);
+            puzzle1Manager.SetPuzzleState(false, true);
         }
 
         // Tunggu sebentar (0.5 detik) biar transisi scene mulus

@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 786c7bc14905c2f45b560b57ac49e2c3, type: 3}
+  m_Name: PC_Puzzle3
+  m_EditorClassIdentifier: 
+  keepPanelOpenAtEnd: 0
+  lines:
+  - characterName: MINION
+    lineText: Siapa anak kecil ini? Matanya bersinar... dia terlihat sangat berani
+    commands: []
+  - characterName: AVA
+    lineText: Apakah itu aku?
+    commands: []
+  - characterName: AVA
+    lineText: Tangan mungil itu memegang crayon sebanyak itu hahaha
+    commands: []
+  - characterName: MINION
+    lineText: Apakah hidupmu sekarang sesuai bayangan Ava saat berusia lima tahun?
+    commands: []
+  - characterName: AVA
+    lineText: "Yah, secara pencapaian\u2026"
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
+  - characterName: AVA
+    lineText: "\u2026 tapi aku merasa tidak berkarya, hanya mengejar target"
+    commands: []
+  - characterName: AVA
+    lineText: Ava versi umur lima tahun itu akan sedih mendengarnya
+    commands:
+    - type: 1
+      value: 
+      audioAsset: {fileID: 0}
+      spriteAsset: {fileID: 21300000, guid: 3fe5a4721fd08fc47bba1165d066d955, type: 3}
+  - characterName: MINION
+    lineText: "Belum tentu\u2026"
+    commands: []
+  - characterName: MINION
+    lineText: Dia pasti bangga dengan dirimu sekarang
+    commands: []
+  - characterName: MINION
+    lineText: Lalu, apa yang dirasakan oleh Ava saat ini?
+    commands: []
+  - characterName: AVA
+    lineText: "Aku merasa aku merindukan bagian diriku\u2026"
+    commands: []
+  - characterName: AVA
+    lineText: "\u2026 yang menatap karyanya dengan mata berbinar"
+    commands: []

@@ -268,5 +268,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2e789d07ec7ecc40a43f72b0c8a8722, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bubbleText: {fileID: 9186665996795853779}
   bubbleImage: {fileID: 9008555214590225556}
-  textComp: {fileID: 9186665996795853779}

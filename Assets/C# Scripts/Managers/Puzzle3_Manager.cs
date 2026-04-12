@@ -4,60 +4,55 @@ using TMPro;
 using System.Collections;
 using System.Collections.Generic;
 
-// Kelas bantuan untuk membuat "Paket" soal di Inspector
 [System.Serializable]
 public class QuestionPackage
 {
     [TextArea(2, 3)]
-    public string questionText;     // Kalimat di papan kuning
-    public List<string> goodAnswers; // Jawaban benar (Lanjut/Skor)
-    public List<string> badAnswers;  // Jawaban salah (Freeze/Merah)
+    public string questionText;
+    public List<string> goodAnswers;
+    public List<string> badAnswers;
 }
 
 public class Puzzle3_Manager : MonoBehaviour
 {
     [Header("Konfigurasi Paket Soal")]
-    public List<QuestionPackage> allPackages; // Daftar soal (Isi di Inspector)
+    public List<QuestionPackage> allPackages;
     
     [Header("Aset Visual")]
-    [Tooltip("Masukkan daftar gambar gelembung warna-warni dari Figma ke sini")]
-    public List<Sprite> bubbleSprites;        // Pilihan gambar gelembung
+    public List<Sprite> bubbleSprites;
     
     [Header("Referensi UI")]
-    public TextMeshProUGUI boardText;        // Teks di Question Panel
-    public Image trafficLight;               // Gambar lampu (Merah/Hijau)
-    public GameObject bubblePrefab;          // Prefab gelembung
-    public RectTransform spawnPoint;         // Titik muncul (Kiri luar)
-    public RectTransform endPoint;           // Titik hancur (Kanan luar)
+    public TextMeshProUGUI boardText;
+    public Image trafficLight;
+    public GameObject bubblePrefab;
+    public RectTransform spawnPoint;
+    public RectTransform endPoint;
 
-    [Header("Pengaturan Gameplay & Jalur")]
-    public float laneDistance = 120f;        // Jarak antar 3 jalur (Atas/Tengah/Bawah)
-    public float scrollSpeed = 250f;         // Kecepatan jalan gelembung
-    public float spawnInterval = 1.2f;       // Jeda muncul gelembung
-    public int targetScorePerLevel = 5;      // Butuh berapa jawaban benar?
+    [Header("Pengaturan Gameplay")]
+    public float laneDistance = 120f;
+    public float scrollSpeed = 250f;
+    public float spawnInterval = 1.2f;
+    public int targetScorePerLevel = 5;
 
-    // Status Internal
-    [HideInInspector] public bool isFrozen = false;
+    private bool isFrozen = false;
     private int currentPackageIndex = 0;
     private int currentScore = 0;
     private QuestionPackage currentPackage;
 
     void Start()
     {
-        if (allPackages.Count > 0)
+        // 1. Inisialisasi Data Awal
+        if (allPackages != null && allPackages.Count > 0)
         {
             LoadPackage(0);
-            StartCoroutine(SpawnLoop());
         }
-        else
-        {
-            Debug.LogError("List All Packages masih kosong! Isi dulu di Inspector.");
-        }
+    
+        // 2. Mulai Munculkan Gelembung (Pake Coroutine biar lebih stabil)
+        StartCoroutine(SpawnLoop());
         
-        SetTrafficLight(true); // Mulai dengan lampu Hijau
+        SetTrafficLight(true);
     }
 
-    // Mengganti soal ke paket tertentu
     public void LoadPackage(int index)
     {
         if (index >= allPackages.Count)
@@ -70,13 +65,13 @@ public class Puzzle3_Manager : MonoBehaviour
         currentPackage = allPackages[index];
         boardText.text = currentPackage.questionText;
         currentScore = 0;
-        Debug.Log($"[Puzzle 3] Memuat Paket {index + 1}: {currentPackage.questionText}");
     }
 
     IEnumerator SpawnLoop()
     {
         while (true)
         {
+            // Hanya spawn kalau sistem tidak sedang beku
             if (!isFrozen)
             {
                 SpawnBubble();
@@ -85,45 +80,36 @@ public class Puzzle3_Manager : MonoBehaviour
         }
     }
 
-    void SpawnBubble()
+    public void SpawnBubble()
     {
-        // Munculkan gelembung di posisi SpawnPoint
-        if (bubblePrefab == null || spawnPoint == null) return;
+        // Validasi: Berhenti di sini kalau ada referensi yang kosong
+        if (bubblePrefab == null || spawnPoint == null || currentPackage == null) return;
 
+        // 1. Munculkan gelembung
         GameObject go = Instantiate(bubblePrefab, spawnPoint.parent);
-        
-        // --- LOGIKA 3 JALUR ---
-        // Pilih jalur acak: -1 (Bawah), 0 (Tengah), atau 1 (Atas)
+        go.transform.localScale = Vector3.one; // Reset skala biar gak gepeng
+
+        // 2. Atur Posisi & Jalur (Lane)
         int randomLane = Random.Range(-1, 2); 
         float yOffset = randomLane * laneDistance;
-
-        // Atur posisi awal (Local Position agar relatif terhadap parent/panel)
         Vector3 startPos = spawnPoint.localPosition;
         startPos.y += yOffset;
         go.transform.localPosition = startPos;
 
-        ThoughtBubble script = go.GetComponent<ThoughtBubble>();
-
-        // --- LOGIKA IDENTITAS (BENAR/SALAH) ---
+        // 3. Tentukan Isi (Jujur vs Bohong)
         bool isGood = Random.value > 0.5f;
-        string chosenText = "";
+        string chosenText = isGood ? 
+            currentPackage.goodAnswers[Random.Range(0, currentPackage.goodAnswers.Count)] : 
+            currentPackage.badAnswers[Random.Range(0, currentPackage.badAnswers.Count)];
 
-        if (isGood && currentPackage.goodAnswers.Count > 0)
-            chosenText = currentPackage.goodAnswers[Random.Range(0, currentPackage.goodAnswers.Count)];
-        else if (currentPackage.badAnswers.Count > 0)
-            chosenText = currentPackage.badAnswers[Random.Range(0, currentPackage.badAnswers.Count)];
-        else
-            chosenText = "...";
+        // 4. Pilih Gambar Balon Acak
+        Sprite chosenSprite = bubbleSprites[Random.Range(0, bubbleSprites.Count)];
 
-        // --- LOGIKA SPRITE (GAMBAR FIGMA) ---
-        // Mengambil gambar acak dari list Sprite
-        Sprite chosenSprite = (bubbleSprites != null && bubbleSprites.Count > 0) ? 
-            bubbleSprites[Random.Range(0, bubbleSprites.Count)] : null;
-
-        // Inisialisasi gelembung (Kirim Sprite ke script ThoughtBubble)
+        // 5. Kirim data ke script balon (PENTING: Gak ada lagi NotImplementedException di sini)
+        ThoughtBubble script = go.GetComponent<ThoughtBubble>();
         if (script != null)
         {
-            script.Setup(chosenSprite, chosenText, isGood, this, scrollSpeed, endPoint.localPosition.x);
+            script.Setup(chosenSprite, chosenText, isGood, scrollSpeed, endPoint.localPosition.x);
         }
     }
 
@@ -134,8 +120,6 @@ public class Puzzle3_Manager : MonoBehaviour
         if (isCorrect)
         {
             currentScore++;
-            Debug.Log($"Skor: {currentScore}/{targetScorePerLevel}");
-            
             if (currentScore >= targetScorePerLevel)
             {
                 NextLevel();
@@ -150,12 +134,9 @@ public class Puzzle3_Manager : MonoBehaviour
     IEnumerator FreezeSystem()
     {
         isFrozen = true;
-        SetTrafficLight(false); // Lampu Merah (Mental Block)
-        Debug.Log("[Puzzle 3] Salah! Sistem membeku sejenak.");
-
-        yield return new WaitForSeconds(2f); // Durasi membeku
-
-        SetTrafficLight(true); // Kembali Hijau
+        SetTrafficLight(false); // Lampu Merah
+        yield return new WaitForSeconds(2f); // Durasi Freeze
+        SetTrafficLight(true); // Lampu Hijau
         isFrozen = false;
     }
 
@@ -173,8 +154,8 @@ public class Puzzle3_Manager : MonoBehaviour
 
     void WinGame()
     {
-        StopAllCoroutines();
         isFrozen = true;
-        Debug.Log("[Puzzle 3] SELESAI! Ava merasa lebih baik.");
+        boardText.text = "Selesai. Ava mulai tenang.";
+        Debug.Log("Act 3 Clear!");
     }
 }

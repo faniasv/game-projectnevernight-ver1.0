@@ -43,6 +43,7 @@ public class DialogueManager : MonoBehaviour
     private bool shouldKeepPanelOpen = false;
 
     public static event Action OnDialogueEnded;
+    private Action currentCallback;
 
     void Awake()
     {
@@ -70,9 +71,10 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
-    public void StartDialogue(DialogueData dialogueData)
+    public void StartDialogue(DialogueData dialogueData, Action onComplete = null)
     {
         if (isDialogueActive) return;
+        currentCallback = onComplete;
 
         isDialogueActive = true;
         shouldKeepPanelOpen = dialogueData.keepPanelOpenAtEnd;
@@ -188,6 +190,12 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
+    public void ForceCloseDialogue(){
+        isDialogueActive = false;
+        StopAllCoroutines();
+        if (animator != null) animator.SetBool("IsOpen", false);
+        if (dialoguePanel != null) dialoguePanel.SetActive(false);
+    }
     private void EndDialogue()
     {
         isDialogueActive = false;
@@ -198,6 +206,12 @@ public class DialogueManager : MonoBehaviour
         if (dialogueTextUI != null)
         {
             dialogueTextUI.text = "";
+        }
+
+        if (currentCallback != null)
+        {
+            currentCallback.Invoke(); // Ini yang bakal manggil fungsi StartPuzzle di Manager kamu
+            currentCallback = null;    // Langsung hapus biar nggak kepanggil lagi
         }
         // ---------------------------------
 
