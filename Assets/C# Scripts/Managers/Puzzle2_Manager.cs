@@ -29,19 +29,27 @@ public class Puzzle2_Manager : MonoBehaviour
     [SerializeField] private Transform puzzleSetParent; 
     [SerializeField] private DialogueManager dialogueManager;
     [SerializeField] private Act2_Manager act2Manager;
+    [SerializeField] private Minion_Act2 minion;
 
     [Header("Database Puzzle")]
     public PuzzleData[] allPuzzles;
     private GameObject currentPuzzleSetInstance;
     private PuzzleData currentActiveData;
+    private int currentActiveIndex;
 
     // 1. SAAT VAS DIPILIH
     public void OnVaseSelected(int puzzleIndex)
     {
         if (puzzleIndex < 0 || puzzleIndex >= allPuzzles.Length) return;
-        
+    
+        currentActiveIndex = puzzleIndex; // Simpan index-nya
         currentActiveData = allPuzzles[puzzleIndex];
+
         vaseSelectionPanel.SetActive(false);
+
+        // 4. SET KE PUZZLE (Pindah ke pojok & Shaking)
+        if(minion != null) minion.ChangeState(Minion_Act2.MinionState.Puzzle);
+
         StartCoroutine(StartPuzzle(currentActiveData));
     }
 
@@ -80,7 +88,7 @@ public class Puzzle2_Manager : MonoBehaviour
         
             // Lapor ke Act2_Manager (Sutradara)
             if (act2Manager != null) {
-                act2Manager.ReportVaseCompleted(); 
+                act2Manager.ReportVaseCompleted(currentActiveIndex);
             }
         });
     }
@@ -94,7 +102,7 @@ public class Puzzle2_Manager : MonoBehaviour
         {
             dialogueManager.StartDialogue(currentActiveData.afterPuzzleDialogue, () => {
                 // LAPOR KE SUTRADARA BESAR
-                act2Manager.ReportVaseCompleted();
+                act2Manager.ReportVaseCompleted(currentActiveIndex);
             });
         }
     }

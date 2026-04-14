@@ -1,12 +1,9 @@
 using UnityEngine;
 using System.Collections;
 using System;
-using UnityEngine.SceneManagement; // WAJIB ADA buat pindah scene!
+using UnityEngine.SceneManagement; 
+using UnityEngine.UI;
 
-/// <summary>
-/// Sutradara khusus untuk Act 2.
-/// Mengatur transisi layar pemilihan vas, dialog pembuka, dan ending Act 2.
-/// </summary>
 public class Act2_Manager : MonoBehaviour
 {
     [Header("UI References")]
@@ -18,17 +15,23 @@ public class Act2_Manager : MonoBehaviour
     public DialogueManager dialogueManager;
     public Puzzle2_Manager puzzle2Manager; 
     [SerializeField] private string mainMenuSceneName = "MainMenu";
+    [SerializeField] private Minion_Act2 minion;
 
     [Header("Narration Data")]
     public DialogueData openingDialogue;  
     public DialogueData endingDialogue; // Dialog penutup Act 2 (setelah 5 vas)
 
+    [Header("Visual Settings")]
+    public Image[] vaseImages; // Tarik 5 Image vas dari Hierarchy ke sini
+    public Color completedColor = Color.white; // Warna terang (Menyala)
+    public Color uncompletedColor = new Color(0.4f, 0.4f, 0.4f, 0.8f);
     private int completedVases = 0;
     private int totalVases = 5; 
 
     private void Start()
     {
         // 1. KONDISI AWAL
+        if(minion != null) minion.ChangeState(Minion_Act2.MinionState.Intro);
         if (vaseSelectionPanel != null) vaseSelectionPanel.SetActive(false);
         if (puzzlePanel != null) puzzlePanel.SetActive(false);
         if (staticMinion != null) staticMinion.SetActive(true);
@@ -46,6 +49,11 @@ public class Act2_Manager : MonoBehaviour
             // Fallback kalau lupa pasang dialog
             if (vaseSelectionPanel != null) vaseSelectionPanel.SetActive(true);
         }
+
+        foreach (Image img in vaseImages)
+        {
+            img.color = uncompletedColor;
+        }
     }
 
     public void StartVasePuzzle(int vaseID)
@@ -56,24 +64,28 @@ public class Act2_Manager : MonoBehaviour
         if (puzzlePanel != null) puzzlePanel.SetActive(true);
     }
 
-    public void ReportVaseCompleted()
+    public void ReportVaseCompleted(int index)
     {
         completedVases++;
         Debug.Log($"[Sutradara] Vas selesai: {completedVases}/{totalVases}");
 
-        if (completedVases >= totalVases) // Kalau sudah 5
+        if (index >= 0 && index < vaseImages.Length)
         {
-            // Jalankan sequence Ending Act 2 (Dialog Final)
+            vaseImages[index].color = completedColor;
+            // Matikan tombolnya biar gak bisa diklik lagi
+            vaseImages[index].GetComponent<Button>().interactable = false;
+        }
+
+        Debug.Log($"[Sutradara] Vas {index} selesai. Total: {completedVases}/{totalVases}");
+
+        if (completedVases >= totalVases) 
+        {
             StartCoroutine(EndAct2Sequence());
         }
         else 
         {
-            // BALIK KE RAK VAS (Vase Selection Panel)
             if (vaseSelectionPanel != null) vaseSelectionPanel.SetActive(true);
-            if (staticMinion != null) staticMinion.SetActive(true);
-        
-            // Tambahan: Di sini lo bisa matiin button vas yang barusan dikerjain 
-            // biar pemain nggak nge-klik vas yang sama dua kali.
+            if (minion != null) minion.ChangeState(Minion_Act2.MinionState.Selection);
         }
     }
 
