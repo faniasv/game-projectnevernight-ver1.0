@@ -86,10 +86,6 @@ public class DialogueManager : MonoBehaviour
             dialogueQueue.Enqueue(line);
         }
 
-        // Buka Panel Animasi
-        if (animator != null) animator.SetBool("IsOpen", true);
-        else if (dialoguePanel != null) dialoguePanel.SetActive(true); // Fallback jika animator null
-
         DisplayNextLine();
     }
 
