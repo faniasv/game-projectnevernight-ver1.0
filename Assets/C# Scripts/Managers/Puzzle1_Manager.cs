@@ -24,6 +24,8 @@ public class Puzzle1_Manager : MonoBehaviour
 
     [Header("System References")]
     public DialogueManager dialogueManager;
+    [SerializeField] private Minion_Act1 minion;
+    public OvtNotesManager ovtManager;
 
     [Header("OVT Reminders")]
     public List<DialogueData> ovtReminderDialogues; 
@@ -33,7 +35,6 @@ public class Puzzle1_Manager : MonoBehaviour
 
     [Header("Puzzle Data")]
     public List<TaskData> allTasksInLevel;
-    public OvtNotesManager ovtManager;
 
     private int attemptCounter = 0;
     private Dictionary<int, string> occupiedSlots = new Dictionary<int, string>();
@@ -97,6 +98,7 @@ public class Puzzle1_Manager : MonoBehaviour
         Debug.Log($"<color=orange>[Puzzle1]</color> Attempt Gagal ke: <b>{attemptCounter}</b>");
 
         DialogueData dialogueToPlay = null;
+        if(minion != null) minion.SetToPuzzleMode();
 
         if (attemptCounter >= 3)
         {
